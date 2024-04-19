@@ -10,61 +10,63 @@
  * @param {string} yAxisTitle 
  * @param {boolean} isReversedAxis 
  */
-let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAxisTitle, isReversedAxis) {
-    const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-    const CHART_TYPE_GRAPH = 'graph';
-    const CHART_TYPE_HYSTOGRAM = 'hystogram';
-    const AXIS_X = 'x';
-    const AXIS_Y = 'y';
-    this.id = id;
-    this.width = width;
-    this.height = height;
-    this.type = type;
-    this.xValues = xValues;
-    this.yValues = yValues;
-    this.container = document.getElementById(this.id);
-    this.svg = document.createElementNS(SVG_NAMESPACE, 'svg');
-    this.chartGroup = document.createElementNS(SVG_NAMESPACE, 'g');
-    this.mainGroup = document.createElementNS(SVG_NAMESPACE, 'g');
-    // Размер оси абсцисс в пикселах
-    this.xAxisWidth = 0;
-    // Размер оси ординат в пикселах
-    this.yAxisHeight = 0;
-    // Размер легенды для оси X в пикселах
-    this.xAxisLegendHeight = 0;
-    // Размер легенды для оси Y в пикселах
-    this.yAxisLegendWidth = 0;
-    this.isReversedAxis = isReversedAxis;
-    // Размер пустых промежутков между плитками гистограммы в пикселах
-    this.hystogramBarGap = 10;
-    this.axisLabelTextAndAxisGap = 20;
-    // Ширина штрихов разметки на осях впикселах
-    this.axisLabelHatchWidth = 10;
-    // Рассчитываемый масштаб по оси X
-    this.xAxisScale = 0;
-    // Рассчитываемый масштаб по оси Y
-    this.yAxisScale = 0;
-    this.defaultAxisValueLabelsAmount = 10;
-    // Значение ширины плитки гистрограммы по умолчанию в пикселах
-    this.hystogramBarWidth = 50;
-    this.hintContainer = document.createElement('div');
-    this.xValueHint = document.createElement('span');
-    this.yValueHint = document.createElement('span');
-    this.xValueHintLabel = xAxisTitle;
-    this.yValueHintLabel = yAxisTitle;
-    // Отсортированные метки оси X
-    this.xAxisSortedLabels = [];
-    // Отсортированные метки оси Y
-    this.yAxisSortedLabels = [];
-    // Подготовленные для отображения метки оси X в виде SVG-узлов <text>
-    this.xAxisLabelTextNodes = new Map();
-    // Подготовленные для отображения метки оси Y в виде SVG-узлов <text>
-    this.yAxisLabelTextNodes = new Map();
-    this.offsetByX = 0;
-    this.offsetByY = 0;
-    this.svgXPadding = 0;
-    this.svgYPadding = 0;
-    this.draw = function () {
+class Chart {
+    static SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+    static CHART_TYPE_GRAPH = 'graph';
+    static CHART_TYPE_HYSTOGRAM = 'hystogram';
+    static AXIS_X = 'x';
+    static AXIS_Y = 'y';
+    constructor(id, width, height, type, xValues, yValues, xAxisTitle, yAxisTitle, isReversedAxis) {
+        this.id = id;
+        this.width = width;
+        this.height = height;
+        this.type = type;
+        this.xValues = xValues;
+        this.yValues = yValues;
+        this.container = document.getElementById(this.id);
+        this.svg = document.createElementNS(Chart.SVG_NAMESPACE, 'svg');
+        this.chartGroup = document.createElementNS(Chart.SVG_NAMESPACE, 'g');
+        this.mainGroup = document.createElementNS(Chart.SVG_NAMESPACE, 'g');
+        // Размер оси абсцисс в пикселах
+        this.xAxisWidth = 0;
+        // Размер оси ординат в пикселах
+        this.yAxisHeight = 0;
+        // Размер легенды для оси X в пикселах
+        this.xAxisLegendHeight = 0;
+        // Размер легенды для оси Y в пикселах
+        this.yAxisLegendWidth = 0;
+        this.isReversedAxis = isReversedAxis;
+        // Размер пустых промежутков между плитками гистограммы в пикселах
+        this.hystogramBarGap = 10;
+        this.axisLabelTextAndAxisGap = 20;
+        // Ширина штрихов разметки на осях впикселах
+        this.axisLabelHatchWidth = 10;
+        // Рассчитываемый масштаб по оси X
+        this.xAxisScale = 0;
+        // Рассчитываемый масштаб по оси Y
+        this.yAxisScale = 0;
+        this.defaultAxisValueLabelsAmount = 10;
+        // Значение ширины плитки гистрограммы по умолчанию в пикселах
+        this.hystogramBarWidth = 20;
+        this.hintContainer = document.createElement('div');
+        this.xValueHint = document.createElement('span');
+        this.yValueHint = document.createElement('span');
+        this.xValueHintLabel = xAxisTitle;
+        this.yValueHintLabel = yAxisTitle;
+        // Отсортированные метки оси X
+        this.xAxisSortedLabels = [];
+        // Отсортированные метки оси Y
+        this.yAxisSortedLabels = [];
+        // Подготовленные для отображения метки оси X в виде SVG-узлов <text>
+        this.xAxisLabelTextNodes = new Map();
+        // Подготовленные для отображения метки оси Y в виде SVG-узлов <text>
+        this.yAxisLabelTextNodes = new Map();
+        this.offsetByX = 0;
+        this.offsetByY = 0;
+        this.svgXPadding = 0;
+        this.svgYPadding = 0;
+    }
+    draw() {
         if (this.xValues.length === 0 || this.yValues.length === 0) {
             return;
         }
@@ -112,7 +114,7 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
         this.svgXPadding = 30;
         this.yAxisLegendWidth = this.drawYAxisLegend();
         this.svgYPadding = 30;
-        if (this.type == CHART_TYPE_HYSTOGRAM && this.isReversedAxis) {
+        if (this.type == Chart.CHART_TYPE_HYSTOGRAM && this.isReversedAxis) {
             if (this.height != 'auto') {
                 let freeSpace = this.svg.getAttribute('height') - 2 * this.svgYPadding - this.xAxisLegendHeight - this.axisLabelTextAndAxisGap;
                 this.hystogramBarWidth = 4 * freeSpace / (5 * this.yValues.length);
@@ -122,7 +124,7 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
         } else {
             this.yAxisHeight = (this.svg.clientHeight - (this.xAxisLegendHeight + this.axisLabelTextAndAxisGap)) - 2 * this.svgYPadding;
         }
-        if (this.type == CHART_TYPE_HYSTOGRAM && !this.isReversedAxis) {
+        if (this.type == Chart.CHART_TYPE_HYSTOGRAM && !this.isReversedAxis) {
             if (this.width != 'auto') {
                 let freeSpace = this.svg.getAttribute('width') - 2 * this.svgXPadding - this.yAxisLegendWidth - this.axisLabelTextAndAxisGap;
                 this.hystogramBarWidth = 4 * freeSpace / (5 * this.xValues.length);
@@ -141,9 +143,9 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
         this.drawAxises();
         this.addMouseEnterHystogramBarHandler();
         this.addMouseLeaveHystogramBarHandler();
-    };
+    }
 
-    this.drawAxises = function () {
+    drawAxises() {
         let xLabelCoord = 0;
         let yLabelCoord = 0;
         this.xAxisScale = this.xAxisWidth / (this.xAxisSortedLabels[this.xAxisSortedLabels.length - 1] - this.xAxisSortedLabels[0]);
@@ -152,14 +154,14 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
         this.offsetByY = this.svgYPadding;
         // ---------------------------------- Рисуем каркас графика -------------------------------------------
         // ------------------------------------- Обработка оси X --------------------------------------------
-        for (i = 0; i < this.xAxisSortedLabels.length; i++) {
-            let xLabelHatch = document.createElementNS(SVG_NAMESPACE, 'line');
+        for (let i = 0; i < this.xAxisSortedLabels.length; i++) {
+            let xLabelHatch = document.createElementNS(Chart.SVG_NAMESPACE, 'line');
             xLabelHatch.setAttribute('y1', this.offsetByY + this.yAxisHeight + this.axisLabelHatchWidth / 2);
             xLabelHatch.setAttribute('y2', this.offsetByY + this.yAxisHeight - this.axisLabelHatchWidth / 2);
             this.chartGroup.appendChild(xLabelHatch);
             let xAxisLabelTextNode = this.xAxisLabelTextNodes.get(this.xAxisSortedLabels[i]);
             let xLabelTextDimensions = xAxisLabelTextNode.getBBox();
-            if (!this.isReversedAxis && this.type == CHART_TYPE_HYSTOGRAM) {
+            if (!this.isReversedAxis && this.type == Chart.CHART_TYPE_HYSTOGRAM) {
                 xLabelCoord = (i + 1) * (this.xAxisWidth / this.xValues.length) - this.xAxisWidth / (2 * this.xValues.length);
             } else {
                 xLabelCoord = i * (this.xAxisWidth / this.defaultAxisValueLabelsAmount);
@@ -176,8 +178,8 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
                 xAxisLabelTextNode.setAttribute('x', this.offsetByX + xLabelCoord);
             }
             xAxisLabelTextNode.setAttribute('y', this.offsetByY + this.yAxisHeight + this.axisLabelTextAndAxisGap);
-            if (this.type != CHART_TYPE_HYSTOGRAM || (this.type == CHART_TYPE_HYSTOGRAM && this.isReversedAxis)) {
-                let xGridLine = document.createElementNS(SVG_NAMESPACE, 'line');
+            if (this.type != Chart.CHART_TYPE_HYSTOGRAM || (this.type == Chart.CHART_TYPE_HYSTOGRAM && this.isReversedAxis)) {
+                let xGridLine = document.createElementNS(Chart.SVG_NAMESPACE, 'line');
                 xGridLine.setAttribute('x1', this.offsetByX + xLabelCoord);
                 xGridLine.setAttribute('x2', this.offsetByX + xLabelCoord);
                 xGridLine.setAttribute('y1', this.offsetByY + this.yAxisHeight);
@@ -186,19 +188,19 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
                 this.chartGroup.appendChild(xGridLine);
             }
         }
-        let xAxis = document.createElementNS(SVG_NAMESPACE, 'line');
+        let xAxis = document.createElementNS(Chart.SVG_NAMESPACE, 'line');
         xAxis.setAttribute('id', 'axis-x');
         xAxis.setAttribute('x1', this.offsetByX);
         xAxis.setAttribute('x2', this.offsetByX + this.xAxisWidth);
         xAxis.setAttribute('y1', this.offsetByY + this.yAxisHeight);
         xAxis.setAttribute('y2', this.offsetByY + this.yAxisHeight);
         // ------------------------------------- Обработка оси Y --------------------------------------------
-        for (i = 0; i < this.yAxisSortedLabels.length; i++) {
-            let yLabelHatch = document.createElementNS(SVG_NAMESPACE, 'line');
+        for (let i = 0; i < this.yAxisSortedLabels.length; i++) {
+            let yLabelHatch = document.createElementNS(Chart.SVG_NAMESPACE, 'line');
             yLabelHatch.setAttribute('x1', this.offsetByX - this.axisLabelHatchWidth / 2);
             yLabelHatch.setAttribute('x2', this.offsetByX + this.axisLabelHatchWidth / 2);
             this.chartGroup.appendChild(yLabelHatch);
-            if (this.isReversedAxis && this.type == CHART_TYPE_HYSTOGRAM) {
+            if (this.isReversedAxis && this.type == Chart.CHART_TYPE_HYSTOGRAM) {
                 yLabelCoord = (i + 1) * (this.yAxisHeight / this.yValues.length) - this.yAxisHeight / (2 * this.yValues.length);
             } else {
                 yLabelCoord = (this.yAxisSortedLabels.length - 1 - i) * (this.yAxisHeight / this.defaultAxisValueLabelsAmount);
@@ -209,8 +211,8 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             let yLabelTextDimensions = yAxisLabelTextNode.getBBox();
             yAxisLabelTextNode.setAttribute('x', this.svgXPadding);
             yAxisLabelTextNode.setAttribute('y', this.offsetByY + yLabelCoord - yLabelTextDimensions.height / 2);
-            if (this.type != CHART_TYPE_HYSTOGRAM || (this.type == CHART_TYPE_HYSTOGRAM && !this.isReversedAxis)) {
-                let yGridLine = document.createElementNS(SVG_NAMESPACE, 'line');
+            if (this.type != Chart.CHART_TYPE_HYSTOGRAM || (this.type == Chart.CHART_TYPE_HYSTOGRAM && !this.isReversedAxis)) {
+                let yGridLine = document.createElementNS(Chart.SVG_NAMESPACE, 'line');
                 yGridLine.setAttribute('x1', this.offsetByX);
                 yGridLine.setAttribute('x2', this.offsetByX + this.xAxisWidth);
                 yGridLine.setAttribute('y1', this.offsetByY + yLabelCoord);
@@ -219,7 +221,7 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
                 this.chartGroup.appendChild(yGridLine);
             }
         }
-        let yAxis = document.createElementNS(SVG_NAMESPACE, 'line');
+        let yAxis = document.createElementNS(Chart.SVG_NAMESPACE, 'line');
         yAxis.setAttribute('id', 'axis-y');
         yAxis.setAttribute('x1', this.offsetByX);
         yAxis.setAttribute('x2', this.offsetByX);
@@ -230,11 +232,11 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
         // ---------------------------- Рисуем сам график ----------------------------
         // ------------------------------- Гистрограмма ------------------------------
         let sourceAxisLableIndex = 0;
-        if (this.type == CHART_TYPE_HYSTOGRAM) {
+        if (this.type == Chart.CHART_TYPE_HYSTOGRAM) {
             if (this.isReversedAxis) {
-                for (i = 0; i < this.yValues.length; i++) {
+                for (let i = 0; i < this.yValues.length; i++) {
                     sourceAxisLableIndex = this.yAxisSortedLabels.indexOf(this.yValues[i]);
-                    let hystogramBar = document.createElementNS(SVG_NAMESPACE, 'rect');
+                    let hystogramBar = document.createElementNS(Chart.SVG_NAMESPACE, 'rect');
                     hystogramBar.setAttribute('x', this.offsetByX);
                     hystogramBar.setAttribute('y', this.offsetByY + sourceAxisLableIndex * (this.yAxisHeight / this.yValues.length) + this.hystogramBarGap / 2);
                     hystogramBar.setAttribute('height', this.yAxisHeight / this.yValues.length - this.hystogramBarGap);
@@ -247,9 +249,9 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
                     this.chartGroup.appendChild(hystogramBar);
                 }
             } else {
-                for (i = 0; i < this.xValues.length; i++) {
+                for (let i = 0; i < this.xValues.length; i++) {
                     sourceAxisLableIndex = this.xAxisSortedLabels.indexOf(this.xValues[i]);
-                    let hystogramBar = document.createElementNS(SVG_NAMESPACE, 'rect');
+                    let hystogramBar = document.createElementNS(Chart.SVG_NAMESPACE, 'rect');
                     hystogramBar.setAttribute('x', this.offsetByX + sourceAxisLableIndex * (this.xAxisWidth / this.xValues.length) + this.hystogramBarGap / 2);
                     hystogramBar.setAttribute('y', this.offsetByY + (this.yAxisHeight - (this.yValues[i] - this.yAxisSortedLabels[0]) * this.yAxisScale));
                     hystogramBar.setAttribute('width', this.xAxisWidth / this.xValues.length - this.hystogramBarGap);
@@ -264,14 +266,14 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             }
         }
         this.chartGroup.setAttribute("stroke", "#c9c9c9");
-    };
+    }
     /**
      * 
      * @param {array} values 
      * @param {boolean} isSequence 
      * @returns 
      */
-    this.getSortedAxisLabelValueRange = function (values, isSequence) {
+    getSortedAxisLabelValueRange(values, isSequence) {
         let valuesAsString = JSON.stringify(values);
         let copiedValues = JSON.parse(valuesAsString);
         let sortedValues = [];
@@ -287,7 +289,7 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
                 minValue = this.smartFloor(minValue);
             }
             maxValue = this.smartCeil(maxValue);
-            amplitude = maxValue - minValue;
+            let amplitude = maxValue - minValue;
             sortedValues = [];
             let axisLabelValue = 0;
             let step = amplitude / this.defaultAxisValueLabelsAmount;
@@ -299,18 +301,18 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             sortedValues = copiedValues.sort();
         }
         return sortedValues;
-    };
-    this.displayHint = function (xValue, yValue, x, y) {
+    }
+    displayHint(xValue, yValue, x, y) {
         this.xValueHint.textContent = `${this.xValueHintLabel}: ${xValue}`;
         this.yValueHint.textContent = `${this.yValueHintLabel}: ${yValue}`;
         this.hintContainer.style.left = x + 'px';
         this.hintContainer.style.top = y + 'px';
         this.hintContainer.style.display = 'flex';
-    };
-    this.hideHint = function () {
+    }
+    hideHint() {
         this.hintContainer.style.display = 'none';
-    };
-    this.addMouseEnterHystogramBarHandler = function (e) {
+    }
+    addMouseEnterHystogramBarHandler(e) {
         let bars = this.container.getElementsByClassName('hystogram-bar');
         let chart = this;
         for (let i = 0; i < bars.length; i++) {
@@ -323,8 +325,8 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             })
         }
 
-    };
-    this.addMouseLeaveHystogramBarHandler = function (e) {
+    }
+    addMouseLeaveHystogramBarHandler(e) {
         let bars = document.getElementsByClassName('hystogram-bar');
         let chart = this;
         for (let i = 0; i < bars.length; i++) {
@@ -334,12 +336,12 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
                 chart.hideHint();
             })
         }
-    };
+    }
     /**
      * @param {int} number
      * @returns {int}
      */
-    this.getAmountOfDigits = function (number) {
+    getAmountOfDigits(number) {
         number = Math.abs(number);
         let amount = 1;
         while (number > 10) {
@@ -347,35 +349,35 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             number = number / 10;
         }
         return amount;
-    };
+    }
     /**
      * Умное округление вверх
      * @returns {int}
      */
-    this.smartCeil = function (number) {
+    smartCeil(number) {
         let digits = this.getAmountOfDigits(number);
         let mostValuedDigit = Math.trunc(number / Math.pow(10, digits - 2 > 0 ? digits - 2 : 0));
         return (mostValuedDigit + 1) * Math.pow(10, digits - 2 > 0 ? digits - 2 : 0);
-    };
+    }
     /**
      * Умное округление вниз
      * @returns {int}
      */
-    this.smartFloor = function (number) {
+    smartFloor(number) {
         let digits = this.getAmountOfDigits(number);
         let mostValuedDigit = Math.trunc(number / Math.pow(10, digits - 2 > 0 ? digits - 2 : 0));
         return (mostValuedDigit - 1) * Math.pow(10, digits - 2 > 0 ? digits - 2 : 0);
-    };
+    }
     /**
      * 
      * @param {string} text
      * @param {string} axis
      * @returns {DomElement}
      */
-    this.createAxisLableTextNode = function (text, axis) {
+    createAxisLableTextNode(text, axis) {
         text = new String(text);
         text = text.trim();
-        let axisLabelTextNode = document.createElementNS(SVG_NAMESPACE, "text");
+        let axisLabelTextNode = document.createElementNS(Chart.SVG_NAMESPACE, "text");
         let tspan = null;
         this.mainGroup.appendChild(axisLabelTextNode);
         let words = text.split(' ');
@@ -394,9 +396,9 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             if (arrayOfTwoWords.length == 1) {
                 axisLabelTextNode.textContent = arrayOfTwoWords[i];
             } else {
-                tspan = document.createElementNS(SVG_NAMESPACE, "tspan");
+                tspan = document.createElementNS(Chart.SVG_NAMESPACE, "tspan");
                 tspan.textContent = arrayOfTwoWords[i];
-                if (axis == AXIS_X) {
+                if (axis == Chart.AXIS_X) {
                     tspan.setAttribute('dx', i === 0 ? 0 : -14);
                 } else {
                     tspan.setAttribute('x', this.svgXPadding);
@@ -406,20 +408,20 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             }
         }
         return axisLabelTextNode;
-    };
+    }
     /**
      * 
      * @returns int
      */
-    this.drawXAxisLegend = function () {
+    drawXAxisLegend() {
         let xAxisLegendHeight = 0;
-        this.xAxisSortedLabels = this.getSortedAxisLabelValueRange(this.xValues, this.type == CHART_TYPE_HYSTOGRAM && !this.isReversedAxis);
+        this.xAxisSortedLabels = this.getSortedAxisLabelValueRange(this.xValues, this.type == Chart.CHART_TYPE_HYSTOGRAM && !this.isReversedAxis);
         for (let xAxisLabel of this.xAxisSortedLabels) {
-            let xAxisLabelTextNode = this.createAxisLableTextNode(xAxisLabel, AXIS_X);
+            let xAxisLabelTextNode = this.createAxisLableTextNode(xAxisLabel, Chart.AXIS_X);
             this.mainGroup.appendChild(xAxisLabelTextNode);
             xAxisLabelTextNode.setAttribute('fill', "#818181");
             xAxisLabelTextNode.setAttribute('font-size', "12");
-            if (this.type == CHART_TYPE_HYSTOGRAM && !this.isReversedAxis) {
+            if (this.type == Chart.CHART_TYPE_HYSTOGRAM && !this.isReversedAxis) {
                 xAxisLabelTextNode.setAttribute('writing-mode', 'tb');
                 xAxisLabelTextNode.setAttribute('dominant-baseline', 'middle');
                 xAxisLabelTextNode.setAttribute('text-anchor', 'left');
@@ -434,16 +436,16 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             this.xAxisLabelTextNodes.set(xAxisLabel, xAxisLabelTextNode);
         }
         return xAxisLegendHeight;
-    };
+    }
     /**
      * 
      * @returns int
      */
-    this.drawYAxisLegend = function () {
+    drawYAxisLegend() {
         let yAxisLegendWidth = 0;
-        this.yAxisSortedLabels = this.getSortedAxisLabelValueRange(this.yValues, this.type == CHART_TYPE_HYSTOGRAM && this.isReversedAxis);
+        this.yAxisSortedLabels = this.getSortedAxisLabelValueRange(this.yValues, this.type == Chart.CHART_TYPE_HYSTOGRAM && this.isReversedAxis);
         for (let yAxisLabel of this.yAxisSortedLabels) {
-            let yAxisLabelTextNode = this.createAxisLableTextNode(yAxisLabel, AXIS_Y);
+            let yAxisLabelTextNode = this.createAxisLableTextNode(yAxisLabel, Chart.AXIS_Y);
             this.mainGroup.appendChild(yAxisLabelTextNode);
             yAxisLabelTextNode.setAttribute('fill', "#818181");
             yAxisLabelTextNode.setAttribute('font-size', "12");
@@ -456,5 +458,5 @@ let Chart = function (id, width, height, type, xValues, yValues, xAxisTitle, yAx
             }
         }
         return yAxisLegendWidth;
-    };
+    }
 }

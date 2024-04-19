@@ -1,2 +1,2 @@
-# ChartsJsLIbrary
+# Charts
 Библиотека для рисования графиков
